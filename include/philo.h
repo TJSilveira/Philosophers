@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <pthread.h>
+#define	MAX_PHILOSOPHERS
 
 typedef struct s_conditions
 {

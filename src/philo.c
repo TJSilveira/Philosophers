@@ -51,6 +51,12 @@ int	ft_atoi_simple(const char *nptr)
 	return ((int)total);
 }
 
+void	error_handler(char *err_msg)
+{
+	printf("Error: %s\n", err_msg);
+	exit (EXIT_FAILURE);
+}
+
 void	init_conditions(t_conditions *c, int argc, char *argv[])
 {
 	int i;
@@ -70,7 +76,7 @@ void	init_conditions(t_conditions *c, int argc, char *argv[])
 		c->arr_mutex = malloc(sizeof(pthread_mutex_t) * c->num_philo);
 		if (c->arr_mutex == NULL)
 			exit(1);
-		while (++i < c->num_philo + 1)
+		while (++i < c->num_philo)
 			pthread_mutex_init(&c->arr_mutex[i], NULL);
 		c->arr_time = malloc(sizeof(struct timeval) * c->num_philo);
 		if (c->arr_time == NULL)
@@ -89,15 +95,57 @@ t_conditions	*cond_func()
 	return (&cond);
 }
 
+void	print_action(t_philo *philo, t_conditions *cond, char *msg)
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	if(pthread_mutex_lock(&cond->print) != 0)
+		error_handler("Error locking the standard output\n");
+	printf("%ld %i %s\n", tv.tv_usec, philo->order, msg);
+	if(pthread_mutex_unlock(&cond->print) != 0)
+		error_handler("Error unlocking the standard output\n");
+}
+
 /*Fork 0 is the fork to the left of the philosopher 0*/
 void	eat_philo(t_philo *philo, t_conditions *cond)
 {
-	int fork0;
-	int fork1;
+	int left_fork;
+	int right_fork;
 
-	fork0 = philo->order;
-	fork1 = (philo->order + 1) % cond->num_philo;
-	// cond->arr_mutex[order];
+	left_fork = philo->order;
+	right_fork = (philo->order + 1) % cond->num_philo;
+	if(pthread_mutex_trylock(&cond->arr_mutex[left_fork]) == 0)
+	{
+		print_action(philo, cond, "has taken a fork\n");
+		if(pthread_mutex_trylock(&cond->arr_mutex[right_fork]) == 0)
+		{
+			print_action(philo, cond, "has taken a fork\n");
+			print_action(philo, cond, "is eating\n");
+			gettimeofday(&cond->arr_time[philo->order], NULL);
+			usleep(cond->time_eat);
+			if(pthread_mutex_unlock(&cond->arr_mutex[left_fork]) != 0)
+				error_handler("Error unlocking the left fork\n");
+			if(pthread_mutex_unlock(&cond->arr_mutex[right_fork]) != 0)
+				error_handler("Error unlocking the right fork\n");
+		}
+		else
+		{
+			if(pthread_mutex_unlock(&cond->arr_mutex[left_fork]) != 0)
+				error_handler("Error unlocking the left fork\n");
+		}
+	}
+}
+
+void	sleep_philo(t_philo *philo, t_conditions *cond)
+{
+	print_action(philo, cond, "is sleeping\n");
+	usleep(cond->time_sleep);
+}
+
+void	think_philo(t_philo *philo, t_conditions *cond)
+{
+	print_action(philo, cond, "is thinking\n");
 }
 
 void	*engine(void *arg)
@@ -108,11 +156,16 @@ void	*engine(void *arg)
 	philo = (t_philo*)arg;
 	cond = cond_func();
 
-	while (1)
+	if (philo->order % 2 == 0)
+		usleep(1);
+
+	int i = 0;
+	while (i < 10)
 	{
 		eat_philo(philo, cond);
-		// think_philo;
-		// sleep_philo;
+		sleep_philo(philo, cond);
+		think_philo(philo, cond);
+		i++;
 	}
 	
 	printf("Order: %i; Thread ID:%li; Number of times to eat: %i\n", philo->order, philo->TID, cond->must_eat);
@@ -123,6 +176,7 @@ int	main(int argc,char *argv[])
 {
 	t_philo			**philo;
 	t_conditions	*cond;
+	pthread_t		observer;
 
 	cond = cond_func();
 	init_conditions(cond, argc, argv);
@@ -138,7 +192,7 @@ int	main(int argc,char *argv[])
 		philo[i] = malloc(sizeof(t_philo));
 		philo[i]->order = i;
 		pthread_create(&philo[i]->TID, NULL, &engine, philo[i]);
-		printf("%d\n", i);
+		printf("%d Philosopher was created\n", i);
 		i++;
 	}
 	i = 0;

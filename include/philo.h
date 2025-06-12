@@ -13,10 +13,11 @@ typedef struct s_conditions
 	int	time_eat;
 	int	time_sleep;
 	int	must_eat;
+	int	*arr_must_eat;
 	pthread_mutex_t *arr_mutex;
 	pthread_mutex_t print;
-	struct timeval *arr_time;
-	struct timeval str_time;
+	size_t *arr_time;
+	size_t str_time;
 }	t_conditions;
 
 typedef struct s_philo
@@ -25,3 +26,6 @@ typedef struct s_philo
 	int			order;
 	int			num_meals;
 }	t_philo;
+
+/* Functions */
+size_t	get_time(void);

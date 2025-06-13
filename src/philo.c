@@ -81,7 +81,8 @@ void	init_conditions(t_conditions *c, int argc, char *argv[])
 		c->arr_time = malloc(sizeof(size_t) * c->num_philo);
 		if (c->arr_time == NULL)
 			exit(1);
-		memset(c->arr_time, -1, sizeof(size_t) * c->num_philo);
+		memset(c->arr_time, 0, sizeof(size_t) * c->num_philo);
+		pthread_mutex_init(&c->print, NULL);
 	}
 	else
 	{
@@ -118,32 +119,31 @@ size_t	get_time(void)
 
 void	eat_philo(t_philo *philo, t_conditions *cond)
 {
-	int left_fork;
-	int right_fork;
+	int first_fork;
+	int second_fork;
 
-	left_fork = philo->order;
-	right_fork = (philo->order + 1) % cond->num_philo;
-	if(pthread_mutex_trylock(&cond->arr_mutex[left_fork]) == 0)
+	if (philo->order % 2 == 0)
 	{
-		print_action(philo->order, cond, "has taken a fork");
-		if(pthread_mutex_trylock(&cond->arr_mutex[right_fork]) == 0)
-		{
-			print_action(philo->order, cond, "has taken a fork");
-			print_action(philo->order, cond, "is eating");
-			cond->arr_time[philo->order] = get_time();
-			philo->num_meals++;
-			usleep(cond->time_eat * 1000);
-			if(pthread_mutex_unlock(&cond->arr_mutex[left_fork]) != 0)
-				error_handler("Error unlocking the left fork\n");
-			if(pthread_mutex_unlock(&cond->arr_mutex[right_fork]) != 0)
-				error_handler("Error unlocking the right fork\n");
-		}
-		else
-		{
-			if(pthread_mutex_unlock(&cond->arr_mutex[left_fork]) != 0)
-				error_handler("Error unlocking the left fork\n");
-		}
+		first_fork = philo->order;
+		second_fork = (philo->order + 1) % cond->num_philo;
 	}
+	else
+	{
+		first_fork= (philo->order + 1) % cond->num_philo;
+		second_fork = philo->order;
+	}
+	pthread_mutex_lock(&cond->arr_mutex[first_fork]);
+	print_action(philo->order, cond, "has taken a fork");
+	pthread_mutex_lock(&cond->arr_mutex[second_fork]);
+	print_action(philo->order, cond, "has taken a fork");
+	print_action(philo->order, cond, "is eating");
+	cond->arr_time[philo->order] = get_time();
+	philo->num_meals++;
+	usleep(cond->time_eat * 1000);
+	if(pthread_mutex_unlock(&cond->arr_mutex[first_fork]) != 0)
+		error_handler("Error unlocking the left fork\n");
+	if(pthread_mutex_unlock(&cond->arr_mutex[second_fork]) != 0)
+		error_handler("Error unlocking the right fork\n");
 }
 
 void	sleep_philo(t_philo *philo, t_conditions *cond)
@@ -237,10 +237,10 @@ int	main(int argc,char *argv[])
 	i = 0;
 	while (i < cond->num_philo)
 	{
-		printf("Philosohper %i: This is the last time he ate:%li\n", i, cond->arr_time[i]);
+		printf("Philosohper %i: This is the last time he ate: %li\n", i, cond->arr_time[i]);
 		i++;
 	}
-	pthread_create(&observer, NULL, &observer_func, NULL);
+	pthread_create(&observer, NULL, &observer_func, philo);
 	cond->str_time = get_time();
 	i = 0;
 	while (i < cond->num_philo)
@@ -253,17 +253,13 @@ int	main(int argc,char *argv[])
 		// printf("%d Philosopher was created\n", i);
 		i++;
 	}
-	i = 0;	
+	i = 0;
+
+	pthread_join(observer, NULL);
 	while (i < cond->num_philo)
 	{
 		pthread_join(philo[i]->TID, NULL);
 		printf("%d\n", i);
-		i++;
-	}
-	i = 0;
-	while (i < cond->num_philo)
-	{
-		printf("ID %i: This is the last time:%li\n", i, cond->arr_time[i]);
 		i++;
 	}
 	// Loop to create all the threads. Put the TID of each thread in the malloc array

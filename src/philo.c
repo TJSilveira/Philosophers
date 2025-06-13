@@ -29,6 +29,16 @@ void	check_argv(int argc, char *argv[])
 	}
 }
 
+void	check_num_philo(t_conditions *c, char *argv[])
+{
+	c->num_philo = ft_atoi_simple(argv[1]);
+	if (c->num_philo < 1)
+	{
+		printf("Invalid number of philosophers '%s'\n", argv[1]);
+		exit(1);
+	}
+}
+
 int	ft_atoi_simple(const char *nptr)
 {
 	long int	total;
@@ -64,7 +74,7 @@ void	init_conditions(t_conditions *c, int argc, char *argv[])
 	if (argc == 5 || argc == 6)
 	{
 		check_argv(argc, argv);
-		c->num_philo = ft_atoi_simple(argv[1]);
+		check_num_philo(c, argv);
 		c->time_die = ft_atoi_simple(argv[2]);
 		c->time_eat = ft_atoi_simple(argv[3]);
 		c->time_sleep = ft_atoi_simple(argv[4]);
@@ -74,14 +84,17 @@ void	init_conditions(t_conditions *c, int argc, char *argv[])
 		else
 			c->must_eat = -1;
 		c->arr_mutex = malloc(sizeof(pthread_mutex_t) * c->num_philo);
+		if(!c->arr_mutex)
+			exit(EXIT_FAILURE);
 		if (c->arr_mutex == NULL)
 			exit(1);
 		i = -1;
 		while (++i < c->num_philo)
 			pthread_mutex_init(&c->arr_mutex[i], NULL);
+		
 		c->arr_time = malloc(sizeof(size_t) * c->num_philo);
-		if (c->arr_time == NULL)
-			exit(1);
+		if (!c->arr_time)
+			exit(EXIT_FAILURE);
 		memset(c->arr_time, 0, sizeof(size_t) * c->num_philo);
 		pthread_mutex_init(&c->print, NULL);
 	}
@@ -162,7 +175,7 @@ void	*engine(void *arg)
 	
 	philo = (t_philo*)arg;
 	cond = cond_func();
-
+	cond->arr_time[philo->order] = get_time();
 	if (philo->order % 2 == 0)
 		usleep(2);
 	int i = 0;
@@ -218,7 +231,8 @@ void	*observer_func(void* arg)
 			if ((cond->arr_time[i] + cond->time_die) < curr_time)
 			{
 				print_action(i, cond, "died");
-				exit(0);
+				cond->end_flag = 1;
+				return (NULL);
 			}
 			i++;
 			if (cond->must_eat != -1)
@@ -238,36 +252,37 @@ int	main(int argc,char *argv[])
 	t_philo			**philo;
 	t_conditions	*cond;
 	pthread_t		observer;
+	int	i;
 
 	cond = cond_func();
 	init_conditions(cond, argc, argv);
-
 	philo = malloc(sizeof(t_philo*) * cond->num_philo);
-
-	int	i;
-	i = 0;
-	while (i < cond->num_philo)
-	{
-		printf("Philosohper %i: This is the last time he ate: %li\n", i, cond->arr_time[i]);
-		i++;
-	}
-	pthread_create(&observer, NULL, &observer_func, philo);
+	if(!philo)
+		exit(EXIT_FAILURE);
 	cond->str_time = get_time();
 	i = 0;
 	while (i < cond->num_philo)
 	{
 		philo[i] = malloc(sizeof(t_philo));
+		if (!philo[i])
+			exit(EXIT_FAILURE);
 		philo[i]->order = i;
 		philo[i]->num_meals = 0;
-		cond->arr_time[i] = cond->str_time;
-		pthread_create(&philo[i]->TID, NULL, &engine, philo[i]);
+		if(pthread_create(&philo[i]->TID, NULL, &engine, philo[i]) != 0)
+			exit(EXIT_FAILURE);
 		i++;
 	}
+	if(pthread_create(&observer, NULL, &observer_func, philo) != 0)
+		exit(EXIT_FAILURE);
 	i = 0;
 	pthread_join(observer, NULL);
 	while (i < cond->num_philo)
 	{
 		pthread_join(philo[i]->TID, NULL);
+		free(philo[i]);
 		i++;
 	}
+	free(philo);
+	free(cond->arr_mutex);
+	free(cond->arr_time);
 }

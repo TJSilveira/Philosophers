@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <pthread.h>
-#define	MAX_PHILOSOPHERS
 
 typedef struct s_conditions
 {
@@ -28,4 +27,5 @@ typedef struct s_philo
 }	t_philo;
 
 /* Functions */
+int	ft_atoi_simple(const char *nptr);
 size_t	get_time(void);

@@ -13,7 +13,7 @@ typedef struct s_conditions
 	int	time_eat;
 	int	time_sleep;
 	int	must_eat;
-	int	*arr_must_eat;
+	int	end_flag;
 	pthread_mutex_t *arr_mutex;
 	pthread_mutex_t print;
 	size_t *arr_time;

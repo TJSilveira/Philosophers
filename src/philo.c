@@ -68,14 +68,15 @@ void	init_conditions(t_conditions *c, int argc, char *argv[])
 		c->time_die = ft_atoi_simple(argv[2]);
 		c->time_eat = ft_atoi_simple(argv[3]);
 		c->time_sleep = ft_atoi_simple(argv[4]);
+		c->end_flag = 0;
 		if (argc == 6)
 			c->must_eat = ft_atoi_simple(argv[5]);
 		else
 			c->must_eat = -1;
-		i = -1;
 		c->arr_mutex = malloc(sizeof(pthread_mutex_t) * c->num_philo);
 		if (c->arr_mutex == NULL)
 			exit(1);
+		i = -1;
 		while (++i < c->num_philo)
 			pthread_mutex_init(&c->arr_mutex[i], NULL);
 		c->arr_time = malloc(sizeof(size_t) * c->num_philo);
@@ -101,6 +102,8 @@ void	print_action(int order, t_conditions *cond, char *msg)
 {
 	size_t	curr_time;
 
+	if (cond->end_flag == 1)
+		return ;
 	if(pthread_mutex_lock(&cond->print) != 0)
 		error_handler("Error locking the standard output\n");
 	curr_time = get_time();
@@ -161,43 +164,50 @@ void	*engine(void *arg)
 	cond = cond_func();
 
 	if (philo->order % 2 == 0)
-		usleep(250);
+		usleep(2);
 	int i = 0;
 	while (1)
 	{
 		eat_philo(philo, cond);
 		sleep_philo(philo, cond);
 		print_action(philo->order, cond, "is thinking");
+		if (cond->end_flag == 1)
+			return (NULL);
 		i++;
-	}
-	
-	printf("Order: %i; Thread ID:%li; Number of times to eat: %i\n", philo->order, philo->TID, cond->must_eat);
+	}	
 	return (NULL);
 }
 
-int	reached_eat_goal(t_conditions *cond, t_philo *philo)
+int	reached_eat_goal(t_conditions *cond, t_philo **philo)
 {
 	int	i;
 
 	i = 0;
 	while (i < cond->num_philo)
 	{
-		if (philo[i].num_meals < cond->must_eat)
+		if (philo[i]->num_meals < cond->must_eat)
 			return (0);
 		i++;
 	}
+	i = 0;
+	while (i < cond->num_philo)
+	{
+		printf("===> Number of meals of %i: %i\n", i + 1, philo[i]->num_meals);
+		i++;
+	}
+	cond->end_flag = 1;
 	return (1);
 }
 
 void	*observer_func(void* arg)
 {
 	t_conditions	*cond;
-	t_philo			*philo;
+	t_philo			**philo;
 	size_t			curr_time;
 	int				i;
 
 	cond = cond_func();
-	philo = (t_philo*)arg;
+	philo = (t_philo**)arg;
 	usleep(1000 * cond->time_die / 2);
 	while (1)
 	{
@@ -214,7 +224,10 @@ void	*observer_func(void* arg)
 			if (cond->must_eat != -1)
 			{
 				if (reached_eat_goal(cond, philo))
-					break;
+				{
+					pthread_mutex_lock(&cond->print);
+					return (NULL);
+				}
 			}
 		}
 	}
@@ -230,7 +243,6 @@ int	main(int argc,char *argv[])
 	cond = cond_func();
 	init_conditions(cond, argc, argv);
 
-	// Make malloc array to have the address/TID of all the philosopher	
 	philo = malloc(sizeof(t_philo*) * cond->num_philo);
 
 	int	i;
@@ -250,17 +262,13 @@ int	main(int argc,char *argv[])
 		philo[i]->num_meals = 0;
 		cond->arr_time[i] = cond->str_time;
 		pthread_create(&philo[i]->TID, NULL, &engine, philo[i]);
-		// printf("%d Philosopher was created\n", i);
 		i++;
 	}
 	i = 0;
-
 	pthread_join(observer, NULL);
 	while (i < cond->num_philo)
 	{
 		pthread_join(philo[i]->TID, NULL);
-		printf("%d\n", i);
 		i++;
 	}
-	// Loop to create all the threads. Put the TID of each thread in the malloc array
 }

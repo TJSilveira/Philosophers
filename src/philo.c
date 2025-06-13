@@ -86,12 +86,9 @@ void	init_conditions(t_conditions *c, int argc, char *argv[])
 		c->arr_mutex = malloc(sizeof(pthread_mutex_t) * c->num_philo);
 		if(!c->arr_mutex)
 			exit(EXIT_FAILURE);
-		if (c->arr_mutex == NULL)
-			exit(1);
 		i = -1;
 		while (++i < c->num_philo)
 			pthread_mutex_init(&c->arr_mutex[i], NULL);
-		
 		c->arr_time = malloc(sizeof(size_t) * c->num_philo);
 		if (!c->arr_time)
 			exit(EXIT_FAILURE);

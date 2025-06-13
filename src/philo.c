@@ -208,7 +208,7 @@ void	*observer_func(void* arg)
 
 	cond = cond_func();
 	philo = (t_philo**)arg;
-	usleep(1000 * cond->time_die / 2);
+	usleep(1000 * cond->num_philo);
 	while (1)
 	{
 		i = 0;
@@ -225,7 +225,6 @@ void	*observer_func(void* arg)
 			{
 				if (reached_eat_goal(cond, philo))
 				{
-					pthread_mutex_lock(&cond->print);
 					return (NULL);
 				}
 			}

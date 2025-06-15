@@ -54,6 +54,10 @@ clean:
 	@echo "$(RED)Did someone call - $(ITALIC)pause$(RESET)$(RED) - the Clean-up crew?!$(RESET)"
 	@$ rm -rf $(OBJS_DIR)
 
+valgrind:
+	valgrind ./bin/philo 100 80 10 10 50
+	valgrind ./bin/philo 100 10 1 10 50
+
 fclean: clean
 	rm -rf $(BIN_DIR)
 

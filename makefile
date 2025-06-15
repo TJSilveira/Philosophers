@@ -56,7 +56,7 @@ clean:
 
 valgrind:
 	valgrind ./bin/philo 100 80 10 10 50
-	valgrind ./bin/philo 100 10 1 10 50
+	valgrind ./bin/philo 1 10 1 10 50
 
 fclean: clean
 	rm -rf $(BIN_DIR)

@@ -22,7 +22,7 @@ void	check_argv(int argc, char *argv[])
 			if(ft_isdigit(argv[i][j]) == 0)
 			{
 				printf("The argument '%s' is not valid\n", argv[i]);
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			j++;
 		}
@@ -35,7 +35,7 @@ void	check_num_philo(t_conditions *c, char *argv[])
 	if (c->num_philo < 1)
 	{
 		printf("Invalid number of philosophers '%s'\n", argv[1]);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -54,7 +54,7 @@ int	ft_atoi_simple(const char *nptr)
 		if (total > __INT_MAX__)
 		{
 			printf("%s exceeds INT_MAX\n", nptr);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 		i++;
 	}
@@ -94,11 +94,12 @@ void	init_conditions(t_conditions *c, int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		memset(c->arr_time, 0, sizeof(size_t) * c->num_philo);
 		pthread_mutex_init(&c->print, NULL);
+		c->str_time = get_time();
 	}
 	else
 	{
 		printf("Number of arguments is not valid\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -172,9 +173,9 @@ void	*engine(void *arg)
 	
 	philo = (t_philo*)arg;
 	cond = cond_func();
-	cond->arr_time[philo->order] = get_time();
 	if (philo->order % 2 == 0)
 		usleep(2);
+	cond->arr_time[philo->order] = get_time();
 	int i = 0;
 	while (1)
 	{
@@ -197,12 +198,6 @@ int	reached_eat_goal(t_conditions *cond, t_philo **philo)
 	{
 		if (philo[i]->num_meals < cond->must_eat)
 			return (0);
-		i++;
-	}
-	i = 0;
-	while (i < cond->num_philo)
-	{
-		printf("===> Number of meals of %i: %i\n", i + 1, philo[i]->num_meals);
 		i++;
 	}
 	cond->end_flag = 1;
@@ -244,6 +239,19 @@ void	*observer_func(void* arg)
 	return (NULL);
 }
 
+void	engine_1philo(t_conditions* cond)
+{
+	if (cond->num_philo == 1)
+	{
+		print_action(0, cond, "has taken a fork");
+		usleep(1000 * cond->time_die);
+		print_action(0, cond, "died");
+		free(cond->arr_mutex);
+		free(cond->arr_time);
+		exit(0);
+	}
+}
+
 int	main(int argc,char *argv[])
 {
 	t_philo			**philo;
@@ -253,10 +261,10 @@ int	main(int argc,char *argv[])
 
 	cond = cond_func();
 	init_conditions(cond, argc, argv);
+	engine_1philo(cond);
 	philo = malloc(sizeof(t_philo*) * cond->num_philo);
 	if(!philo)
 		exit(EXIT_FAILURE);
-	cond->str_time = get_time();
 	i = 0;
 	while (i < cond->num_philo)
 	{
@@ -277,8 +285,10 @@ int	main(int argc,char *argv[])
 	{
 		pthread_join(philo[i]->TID, NULL);
 		free(philo[i]);
+		pthread_mutex_destroy(&cond->arr_mutex[i]);
 		i++;
 	}
+	pthread_mutex_destroy(&cond->print);
 	free(philo);
 	free(cond->arr_mutex);
 	free(cond->arr_time);

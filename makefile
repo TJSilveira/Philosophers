@@ -20,7 +20,8 @@ OBJS_DIR		= ./objs/
 BIN_DIR			= ./bin/
 
 # Source Files
-SRC_FILES = philo.c
+SRC_FILES = philo.c \
+			utils.c
 
 # Object Files
 OBJS_FILES			= $(SRC_FILES:.c=.o)

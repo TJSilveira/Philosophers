@@ -1,6 +1,6 @@
 #include "../include/philo.h"
 
-void	eat_philo(t_philo *philo, t_conditions *cond)
+void	eat_philo(t_philo *philo, t_cond *cond)
 {
 	int	first_fork;
 	int	second_fork;
@@ -21,7 +21,7 @@ void	eat_philo(t_philo *philo, t_conditions *cond)
 	checker_pthread_mutex_unlock(&cond->arr_e_mutex[philo->order]);
 }
 
-void	sleep_philo(t_philo *philo, t_conditions *cond)
+void	sleep_philo(t_philo *philo, t_cond *cond)
 {
 	print_action(philo->order, cond, "is sleeping");
 	usleep(cond->time_sleep * 1000);

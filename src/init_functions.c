@@ -1,6 +1,6 @@
 #include "../include/philo.h"
 
-void	init_conditions_aux(t_conditions *c, int argc, char *argv[])
+void	init_conditions_aux(t_cond *c, int argc, char *argv[])
 {
 	int	i;
 
@@ -25,7 +25,7 @@ void	init_conditions_aux(t_conditions *c, int argc, char *argv[])
 	c->str_time = get_time();
 }
 
-void	init_conditions(t_conditions *c, int argc, char *argv[])
+void	init_conditions(t_cond *c, int argc, char *argv[])
 {
 	if (argc == 5 || argc == 6)
 	{
@@ -44,17 +44,17 @@ void	init_conditions(t_conditions *c, int argc, char *argv[])
 	}
 }
 
-t_conditions	*cond_func(void)
+t_cond	*cond_func(void)
 {
-	static t_conditions	cond;
+	static t_cond	cond;
 
 	return (&cond);
 }
 
-void	spawn_philosophers(t_conditions *cond, t_philo **philo)
+void	spawn_philosophers(t_cond *cond, t_philo **philo)
 {
 	int	i;
-	
+
 	i = 0;
 	while (i < cond->num_philo)
 	{
@@ -70,7 +70,7 @@ void	spawn_philosophers(t_conditions *cond, t_philo **philo)
 	}
 }
 
-void	engine_1philo(t_conditions *cond)
+void	engine_1philo(t_cond *cond)
 {
 	if (cond->num_philo == 1)
 	{

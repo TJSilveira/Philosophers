@@ -29,7 +29,7 @@ void	check_argv(int argc, char *argv[])
 	}
 }
 
-void	check_num_philo(t_conditions *c, char *argv[])
+void	check_num_philo(t_cond *c, char *argv[])
 {
 	c->num_philo = ft_atoi_simple(argv[1]);
 	if (c->num_philo < 1)

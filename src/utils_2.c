@@ -12,7 +12,7 @@ void	checker_pthread_mutex_unlock(pthread_mutex_t *mutex)
 		error_handler("Error unlocking mutex\n");
 }
 
-void	print_action(int order, t_conditions *cond, char *msg)
+void	print_action(int order, t_cond *cond, char *msg)
 {
 	size_t	curr_time;
 
@@ -33,7 +33,7 @@ size_t	get_time(void)
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
-void	despawn_philosophers(t_conditions *cond, t_philo **philo, pthread_t *observer)
+void	despawn_philosophers(t_cond *cond, t_philo **philo, pthread_t *observer)
 {
 	int	i;
 

@@ -2,9 +2,9 @@
 
 void	*engine(void *arg)
 {
-	t_philo			*philo;
-	t_conditions	*cond;
-	int				i;
+	t_philo	*philo;
+	t_cond	*cond;
+	int		i;
 
 	philo = (t_philo *)arg;
 	cond = cond_func();
@@ -22,7 +22,7 @@ void	*engine(void *arg)
 	return (NULL);
 }
 
-int	reached_eat_goal(t_conditions *cond, t_philo **philo)
+int	reached_eat_goal(t_cond *cond, t_philo **philo)
 {
 	int	i;
 
@@ -37,7 +37,7 @@ int	reached_eat_goal(t_conditions *cond, t_philo **philo)
 	return (1);
 }
 
-int	checker_philo_status(t_conditions *cond, int i)
+int	checker_philo_status(t_cond *cond, int i)
 {
 	size_t			curr_time;
 
@@ -59,9 +59,9 @@ int	checker_philo_status(t_conditions *cond, int i)
 
 void	*observer_func(void *arg)
 {
-	t_conditions	*cond;
-	t_philo			**philo;
-	int				i;
+	t_cond	*cond;
+	t_philo	**philo;
+	int		i;
 
 	cond = cond_func();
 	philo = (t_philo **)arg;
@@ -87,9 +87,9 @@ void	*observer_func(void *arg)
 
 int	main(int argc, char *argv[])
 {
-	t_philo			**philo;
-	t_conditions	*cond;
-	pthread_t		observer;
+	t_philo		**philo;
+	t_cond		*cond;
+	pthread_t	observer;
 
 	cond = cond_func();
 	init_conditions(cond, argc, argv);

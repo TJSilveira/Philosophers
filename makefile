@@ -21,7 +21,10 @@ BIN_DIR			= ./bin/
 
 # Source Files
 SRC_FILES = philo.c \
-			utils.c
+			actions.c \
+			init_functions.c \
+			utils_1.c \
+			utils_2.c
 
 # Object Files
 OBJS_FILES			= $(SRC_FILES:.c=.o)

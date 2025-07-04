@@ -42,10 +42,10 @@ void	init_conditions(t_cond *c, int argc, char *argv[])
 	if (argc == 5 || argc == 6)
 	{
 		check_argv(argc, argv);
-		check_num_philo(c, argv);
-		c->time_die = ft_atoi_simple(argv[2]);
-		c->time_eat = ft_atoi_simple(argv[3]);
-		c->time_sleep = ft_atoi_simple(argv[4]);
+		check_input(&c->num_philo, argv, 1, "Philosphers not valid");
+		check_input(&c->time_die, argv, 2, "Time to die not valid");
+		check_input(&c->time_eat, argv, 3, "Time to eat not valid");
+		check_input(&c->time_sleep, argv, 4, "Time to sleep not valid");
 		c->end_flag = 0;
 		init_conditions_aux(c, argc, argv);
 	}

@@ -41,12 +41,12 @@ void	check_argv(int argc, char *argv[])
 	}
 }
 
-void	check_num_philo(t_cond *c, char *argv[])
+void	check_input(int *nbr, char *argv[], int i, char *msg)
 {
-	c->num_philo = ft_atoi_simple(argv[1]);
-	if (c->num_philo < 1)
+	*nbr = ft_atoi_simple(argv[i]);
+	if (*nbr < 1)
 	{
-		printf("Invalid number of philosophers '%s'\n", argv[1]);
+		printf("%s'%s'\n", msg, argv[i]);
 		exit(EXIT_FAILURE);
 	}
 }

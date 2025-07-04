@@ -58,7 +58,7 @@ void	engine_1philo(t_cond *cond);
 /* utils_1.c */
 int		ft_isdigit(int c);
 void	check_argv(int argc, char *argv[]);
-void	check_num_philo(t_cond *c, char *argv[]);
+void	check_input(int *nbr, char *argv[], int i, char *msg);
 int		ft_atoi_simple(const char *nptr);
 void	error_handler(char *err_msg);
 

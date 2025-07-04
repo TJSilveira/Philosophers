@@ -29,7 +29,7 @@ void	print_action(int order, t_cond *cond, char *msg)
 	size_t	curr_time;
 
 	checker_pthread_mutex_lock(&cond->print_mutex);
-	if (!(msg[0] != 'd' && cond->end_flag == 1))
+	if (msg[0] == 'd' || cond->end_flag != 1)
 	{
 		curr_time = get_time();
 		printf("%ld %i %s\n", curr_time - cond->str_time, order + 1, msg);

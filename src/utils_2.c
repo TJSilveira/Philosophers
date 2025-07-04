@@ -51,6 +51,7 @@ void	despawn_philosophers(t_cond *cond, t_philo **philo, pthread_t *observer)
 
 	i = 0;
 	pthread_join(*observer, NULL);
+	usleep((cond->time_eat + cond->time_sleep) * 1000);
 	while (i < cond->num_philo)
 	{
 		pthread_join(philo[i]->tid, NULL);
@@ -60,6 +61,7 @@ void	despawn_philosophers(t_cond *cond, t_philo **philo, pthread_t *observer)
 		i++;
 	}
 	pthread_mutex_destroy(&cond->print_mutex);
+	pthread_mutex_destroy(&cond->end_mutex);
 	free(philo);
 	free(cond->arr_f_mutex);
 	free(cond->arr_e_mutex);
